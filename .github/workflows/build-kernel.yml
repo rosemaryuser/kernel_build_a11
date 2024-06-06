@@ -19,6 +19,29 @@ jobs:
           echo "KERNEL_CONFIG=$(cat config.env | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "BUILD_ARGS=$(cat config.env | grep -w "BUILD_ARGS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
 
+
+      # Set swap space
+      - name: 📐 Set swap to 10G
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 12
+
+      # Install prerequisites for Ubuntu
+      - name: ⭐ Install prerequisites
+        run: |
+          apt install sudo 
+          sudo apt-get update && sudo apt-get upgrade
+          sudo apt-get install -y curl git ftp lftp wget libarchive-tools ccache python2 python2-dev python3
+          sudo apt-get install -y pngcrush schedtool dpkg-dev liblz4-tool make optipng maven ca-certificates
+          sudo apt-get install -y libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc
+          sudo apt-get install -y libxml2-utils libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools lzop flex 
+          sudo apt-get install -y build-essential bc libssl-dev libfl-dev nano libc6-dev openssl ssh zstd
+          sudo apt-get install -y pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl 
+          sudo apt-get install -y zip unzip tar gzip bzip2 rar unrar g++-multilib bison gperf zlib1g-dev automake
+          sudo apt-get install -y software-properties-common libffi-dev libncurses5-dev zlib1g libreadline-dev libsqlite3-dev 
+          sudo apt-get install -y pigz git-lfs gnupg imagemagick lib32readline-dev lib32z1-dev libelf-dev libncurses5 libsdl1.2-dev 
+          sudo apt-get install -y libxml2 rsync adb fastboot
+          
       - name: Pull toolchain
         run: |
           mkdir ${{ github.workspace }}/clang
