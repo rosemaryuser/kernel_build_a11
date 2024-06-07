@@ -119,8 +119,6 @@ jobs:
             <b>Build Date: </b>$(date)
           
             <a href="https://github.com/${{ github.repository }}/releases/tag/${{ env.BUILD_DATE }}">Download</a>
-          
-            <a href="${{ github.event.inputs.KERNEL_REPO }}/commits/${{ github.event.inputs.KERNEL_BRANCH }}">Changelogs</a>
 
             <b>ChangeLogs:</b>
             ${{ github.event.inputs.KERNEL_HOTFIX }}
