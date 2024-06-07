@@ -68,6 +68,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}/kernel-source
           export PATH=${{ github.workspace }}/clang/bin:${PATH}
+          echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
           echo "CLANG_VER=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')" >> $GITHUB_ENV
           export TZ="Asia/Kuala Lumpur"
           export KBUILD_BUILD_USER="NYO"
@@ -81,8 +82,7 @@ jobs:
                                   "
           cd ${{ github.workspace }}/kernel-source
           make clean
-          make O=out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
-          echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
+          make O=out ARCH=arm64 ${{ env.KERNEL_CONFIG }]
           make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
 
       - name: Package kernel
