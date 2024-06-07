@@ -82,8 +82,8 @@ jobs:
                                   "
           cd ${{ github.workspace }}/kernel-source
           make clean
-          make O=out ARCH=arm64 ${{ env.KERNEL_CONFIG }]
-          make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
+          make O=out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
+          make -j$(nproc --all) ${args}
 
       - name: Package kernel
         run: |
