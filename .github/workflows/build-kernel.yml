@@ -66,6 +66,7 @@ jobs:
           
       - name: Build kernel
         run: |
+          cd ${{ github.workspace }}/kernel_source
           export PATH=${{ github.workspace }}/clang/bin:${PATH}
           echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
           echo "CLANG_VER=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')" >> $GITHUB_ENV
