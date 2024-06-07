@@ -81,7 +81,6 @@ jobs:
                                   CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
                                   "
           cd ${{ github.workspace }}/kernel-source
-          make clean
           make O=out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
           make -j$(nproc --all) ${args}
 
