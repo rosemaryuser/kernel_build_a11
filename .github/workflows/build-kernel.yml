@@ -76,7 +76,7 @@ jobs:
           args="                  ARCH=arm64 \
                                   CC=clang \
                                   O=../out \
-                                  ${{ env.BUILD_ARGS } \
+                                  ${{ env.BUILD_ARGS }} \
                                   CROSS_COMPILE=aarch64-linux-gnu-
                                   CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
           cd ${{ github.workspace }}/kernel-source
