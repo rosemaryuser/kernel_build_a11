@@ -62,7 +62,7 @@ jobs:
       - name: Enable thin lto or not
         run: |
           if [ ${{ inputs.ENABLE_LTO }} == true ]; then
-            echo "CONFIG_LTO_CLANG=y" >>  ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ inputs.KERNEL_CONFIG }}
+            echo "CONFIG_LTO_CLANG=y" >>  ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
           fi
           
       - name: Build kernel
