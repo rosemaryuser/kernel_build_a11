@@ -66,6 +66,7 @@ jobs:
           
       - name: Build kernel
         run: |
+          echo "date=$(date)" >> GITHUB_ENV
           cd ${{ github.workspace }}/kernel-source
           export PATH=${{ github.workspace }}/clang/bin:${PATH}
           echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
@@ -117,7 +118,7 @@ jobs:
           message: |
             <b>Build ended</b>
 
-            <b>Build Date: </b>$(date)
+            <b>Build Started Date: </b>${{ env.date }} 
           
             <a href="https://github.com/${{ github.repository }}/releases/tag/${{ env.BUILD_DATE }}">Download</a>
 
