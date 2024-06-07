@@ -29,7 +29,7 @@ jobs:
           echo "PROCS=$(nproc --all)" >> GITHUB_ENV
 
       # Set swap space
-      - name: 📐 Set swap to 10G
+      - name: 📐 Set swap to 12GB
         uses: pierotofy/set-swap-space@master
         with:
           swap-size-gb: 12
@@ -49,13 +49,13 @@ jobs:
           sudo apt-get install -y pigz git-lfs gnupg imagemagick lib32readline-dev lib32z1-dev libelf-dev libncurses5 libsdl1.2-dev 
           sudo apt-get install -y libxml2 rsync adb fastboot
           
-      - name: Pull toolchain
+      - name: 💫 Get toolchains
         run: |
           mkdir ${{ github.workspace }}/clang
           cd clang
           git clone https://github.com/rosemaryuser/clang-genom-kernel --depth=1 ${{ github.workspace }}/clang
 
-      - name: Pull kernel source
+      - name: 🌟 Clone kernel source
         run: |
            mkdir ${{ github.workspace }}/kernel-source
            git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} ${{ github.workspace }}/kernel-source
@@ -66,13 +66,16 @@ jobs:
             echo "NAMELTO=-LTO" >> GITHUB_ENV
             echo "CONFIG_LTO_CLANG=y" >>  ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
           fi
+
+      - name: ⏰ Set builddate
+        id: generate-builddate
+        run: echo "date=$(date)" 
           
-      - name: Build kernel
+      - name: 🐎 Build kernel
         run: |
           cd ${{ github.workspace }}/kernel-source
           echo "COMMIT_HEAD=$(git log --oneline -1)" >> GITHUB_ENV
           echo "build_start=$(date +"%s")" >> GITHUB_ENV
-          echo "date=$(date)" >> GITHUB_ENV
           export PATH=${{ github.workspace }}/clang/bin:${PATH}
           echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
           echo "CLANG_VER=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')" >> $GITHUB_ENV
@@ -118,8 +121,7 @@ jobs:
           cd AnyKernel3/
           zip -r9 "[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip" -- *
         
-          
-      - name: Upload Release
+      - name: 🧧 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -141,7 +143,7 @@ jobs:
           disable_web_page_preview: true
           message: |
             <b>Build info</b>
-            <b>Build Started Date: </b>${{ env.date }} 
+            <b>Build Started Date: </b>${{ steps.generate-builddate.outputs.date }}
             <b>Top Commit: </b>${{ env.COMMIT_HEAD }} 
             <b>Core Count : </b>${{ env.PROCS }} cores
             <b>Enabled LTO Clang: </b>${{ github.events.inputs.ENABLE_LTO }}
