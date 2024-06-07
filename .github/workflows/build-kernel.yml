@@ -1,9 +1,12 @@
 name: Build Genom Kernel
 
-
 on:
   workflow_dispatch:
-
+    inputs:
+      KERNEL_HOTFIX:
+        description: 'ChangeLogs'
+        required: false
+        default: 'update'
 
 jobs:
   build-kernel:
@@ -55,16 +58,18 @@ jobs:
 
       - name: Build kernel
         run: |
+          export PATH=${{ github.workspace }}/clang/bin:${PATH}
+          echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
+          echo "CLANG_VER=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')" >> $GITHUB_ENV
+          export TZ="Asia/Kuala Lumpur"
           export KBUILD_BUILD_USER="NYO"
           export KBUILD_BUILD_HOST="github_workspace"
-          export PATH=${{ github.workspace }}/clang/bin:${PATH}
           args="                  ARCH=arm64 \
                                   CC=clang \
                                   O=../out \
                                   ${{ env.BUILD_ARGS } \
                                   CROSS_COMPILE=aarch64-linux-gnu-
                                   CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-                                  
           cd ${{ github.workspace }}/kernel-source
           make clean
           make ${args} ${{ env.KERNEL_CONFIG }}
@@ -91,3 +96,27 @@ jobs:
         with:
           name: output_kernel
           path: AnyKernel3/*
+
+      - name: Fast Telegram Action
+        uses: s00d/fast-telegram-action@v9    
+        with:
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          to: ${{ secrets.TELEGRAM_TO }}
+          format: html
+          disable_web_page_preview: true
+          message: |
+            <b>Build ended</b>
+
+            <b>Build Date: </b>$(date)
+          
+            <a href="https://github.com/${{ github.repository }}/releases/tag/${{ env.BUILD_DATE }}">Download</a>
+          
+            <a href="${{ github.event.inputs.KERNEL_REPO }}/commits/${{ github.event.inputs.KERNEL_BRANCH }}">Changelogs</a>
+
+            <b>ChangeLogs:</b>
+            ${{ github.event.inputs.KERNEL_HOTFIX }}
+
+            <b>Config: </b>${{ env.KERNEL_CONFIG }}
+            <b>Kernel Ver: </b>${{ env.KERNEL_VER }}
+            <b>Clang Ver: </b>${{ env.CLANG_VER }}
+            <b>Maintainer: </b>@NYO
