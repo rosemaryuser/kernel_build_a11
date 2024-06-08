@@ -25,8 +25,8 @@ jobs:
           echo "KERNEL_SOURCE_BRANCH=$(cat config.env | grep -w "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "KERNEL_CONFIG=$(cat config.env | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "BUILD_ARGS=$(cat config.env | grep -w "BUILD_ARGS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
-          echo "PROCS=$(nproc --all)" >> GITHUB_ENV
-          echo "zdate=$(date +%m%d)" >> GITHUB_ENV
+          echo "PROCS=$(nproc --all)" >> $GITHUB_ENV
+          echo "zdate=$(date +%m%d)" >> $GITHUB_ENV
           
       # Set swap space 
       - name: 📐 Set swap to 12GB
@@ -63,7 +63,7 @@ jobs:
       - name: Enable thin lto or not
         run: |
           if [ ${{ inputs.ENABLE_LTO }} == true ]; then
-            echo "NAMELTO=-LTO" >> GITHUB_ENV
+            echo "NAMELTO=-LTO" >> $GITHUB_ENV
             echo "CONFIG_LTO_CLANG=y" >>  ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
           fi
 
@@ -71,7 +71,7 @@ jobs:
         id: generate-builddate
         run: |
           export TZ="Asia/Kuala Lumpur"
-          echo "date=$(date)" >> GITHUB_OUTPUT
+          echo "date=$(date)" >> $GITHUB_OUTPUT
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -82,9 +82,9 @@ jobs:
       - name: 🐎 Build kernel
         run: |
           cd ${{ github.workspace }}/kernel-source
-          echo "HASH_HEAD=$(git rev-parse --short HEAD)" >> GITHUB_ENV
-          echo "COMMIT_HEAD=$(git log --oneline -1)" >> GITHUB_ENV
-          echo "time_start=$(date +%s)" >> GITHUB_ENV
+          echo "HASH_HEAD=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "COMMIT_HEAD=$(git log --oneline -1)" >> $GITHUB_ENV
+          echo "time_start=$(date +%s)" >> $GITHUB_ENV
           export PATH=${{ github.workspace }}/clang/bin:${PATH}
           echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
           echo "CLANG_VER=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')" >> $GITHUB_ENV
@@ -104,14 +104,14 @@ jobs:
           
       - name: ⏰ Set build end time
         id: generate_build_end      
-        run: echo "end_time=$(date +%s)" >> GITHUB_OUTPUT
+        run: echo "end_time=$(date +%s)" >> $GITHUB_OUTPUT
           
       - name: ⏰ Calculate difference between time start and end build
         id: time_difference
         run: |
           echo ${{ env.time_start }}
           echo ${{ steps.generate_build_end.outputs.end_time
-          echo "DIFF=$(( ${{ needs.generate_build_end.outputs.end_time }} - ${{ env.time_start }} ))" >> GITHUB_OUTPUT
+          echo "DIFF=$(( ${{ needs.generate_build_end.outputs.end_time }} - ${{ env.time_start }} ))" >> $GITHUB_OUTPUT
 
       - name: ⌛ Time taken for build
         id: time_taken
