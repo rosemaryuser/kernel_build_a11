@@ -72,6 +72,7 @@ jobs:
         run: |
           export TZ="Asia/Kuala Lumpur"
           echo "date=$(date)" >> $GITHUB_OUTPUT
+          echo "tagdate=$(date +%Y%m%d) >> $GITHUB_OUTPUT
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -100,7 +101,7 @@ jobs:
           cd ${{ github.workspace }}/kernel-source
           make clean
           make O=../out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
-          make -j$(nproc --all) ${args}
+          make -j${{ env.PROCS }} ${args}
           
       - name: ⏰ Set build end time
         id: generate_build_end      
@@ -144,7 +145,7 @@ jobs:
           files: | 
              [${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip
           name: kernel-release
-          tag_name: Genom.${{ steps.generate-builddate.outputs.date }}
+          tag_name: Genom-${{ steps.generate-builddate.outputs.tagdate }}
           body: |
             Repo: ${{ env.KERNEL_SOURCE }}
             Branch: ${{ env.KERNEL_SOURCE_BRANCH }}
@@ -164,7 +165,7 @@ jobs:
             <b>Core Count : </b>${{ env.PROCS }} cores
             <b>Enabled LTO Clang: </b>${{ github.events.inputs.ENABLE_LTO }}
           
-            <a href="https://github.com/${{ github.repository }}/releases/tag/Genom.${{ steps.generate-builddate.outputs.date }}">Download</a>
+            <a href="https://github.com/${{ github.repository }}/releases/tag/Genom-${{ steps.generate-builddate.outputs.date }}">Download</a>
 
             <b>ChangeLogs:</b>
             ${{ github.event.inputs.KERNEL_HOTFIX }}
