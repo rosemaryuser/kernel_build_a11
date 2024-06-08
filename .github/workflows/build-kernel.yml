@@ -34,11 +34,6 @@ jobs:
         with:
           swap-size-gb: 12
 
-      # Set ccache
-      - name: Set ccache dir
-        env:
-          CCACHE_DIR: "${{ github.workspace }}/ccache"
-
       # Install prerequisites for Ubuntu
       - name: ⭐ Install prerequisites
         run: |
