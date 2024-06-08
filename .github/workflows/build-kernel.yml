@@ -66,14 +66,7 @@ jobs:
             echo "NAMELTO=-LTO" >> $GITHUB_ENV
             echo "CONFIG_LTO_CLANG=y" >>  ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
           fi
-
-      - name: ⏰ Set builddate
-        id: generate-builddate
-        run: |
-          export TZ="Asia/Kuala Lumpur"
-          echo "date=$(date)" >> $GITHUB_OUTPUT
-          echo "tagdate=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
-
+          
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
@@ -102,15 +95,19 @@ jobs:
           make clean
           make O=../out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
           make -j${{ env.PROCS }} ${args}
-          
-      - name: ⏰ Set build end time
-        id: generate_build_end      
-        run: echo "end_time=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: ⏰ Set builddate
+        id: generate-builddate
+        run: |
+          export TZ="Asia/Kuala Lumpur"
+          echo "date=$(date)" >> $GITHUB_OUTPUT
+          echo "tagdate=$(date +%Y%m%d)" >> $GITHUB_OUTPUT  
+          echo "end_time=$(date +%s)" >> $GITHUB_OUTPUT
           
       - name: ⏰ Calculate difference between time start and end build
         id: time_difference
         run: |
-          echo "DIFF=$(( ${{ steps.generate_build_end.outputs.end_time }} - ${{ env.time_start }} ))" >> $GITHUB_OUTPUT
+          echo "DIFF=$(( ${{ steps.generate-builddate.outputs.end_time }} - ${{ env.time_start }} ))" >> $GITHUB_OUTPUT
 
       - name: ⌛ Time taken for build
         id: time_taken
