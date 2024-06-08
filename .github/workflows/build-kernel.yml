@@ -72,7 +72,7 @@ jobs:
         run: |
           export TZ="Asia/Kuala Lumpur"
           echo "date=$(date)" >> $GITHUB_OUTPUT
-          echo "tagdate=$(date +%Y%m%d) >> $GITHUB_OUTPUT
+          echo "tagdate=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
