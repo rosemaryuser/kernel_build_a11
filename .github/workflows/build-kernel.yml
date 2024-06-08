@@ -111,7 +111,7 @@ jobs:
         run: |
           echo ${{ env.time_start }}
           echo ${{ steps.generate_build_end.outputs.end_time
-          echo "DIFF=$(( ${{ needs.generate_build_end.outputs.end_time }} - ${{ env.time_start }} ))" >> $GITHUB_OUTPUT
+          echo "DIFF=$(( ${{ steps.generate_build_end.outputs.end_time }} - ${{ env.time_start }} ))" >> $GITHUB_OUTPUT
 
       - name: ⌛ Time taken for build
         id: time_taken
