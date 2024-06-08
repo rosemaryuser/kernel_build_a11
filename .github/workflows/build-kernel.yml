@@ -89,6 +89,7 @@ jobs:
           make clean
           make O=../out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
           make -j${{ env.PROCS }} ${args}
+          echo "end_time=$(date +%s)" >> $GITHUB_ENV
 
       - name: ⏰ Set builddate
         id: generate-builddate
@@ -96,8 +97,7 @@ jobs:
           export TZ="Asia/Kuala Lumpur"
           echo "date=$(date)" >> $GITHUB_OUTPUT
           echo "tagdate=$(date +%Y%m%d)" >> $GITHUB_OUTPUT  
-          echo "end_time=$(date +%s)" >> $GITHUB_OUTPUT
-          echo "DIFF=$(( ${{ steps.generate-builddate.outputs.end_time }} - ${{ env.time_start }} ))" >> $GITHUB_OUTPUT
+          echo "DIFF=$(( ${{ env.end_time }} - ${{ env.time_start }} ))" >> $GITHUB_OUTPUT
 
       - name: ⌛ Time taken for build
         id: time_taken
@@ -106,31 +106,29 @@ jobs:
       - name: 📦 Pack Anykernel3
         run: |
           git clone --depth=1 ${{ env.ANYKERNEL_SOURCE }} -b ${{ env.ANYKERNEL_SOURCE_BRANCH }} AnyKernel3 && rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/LICENSE AnyKernel3/README.md
-           if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb" ]; then
-            cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb ./AnyKernel3/
-          else
-            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image" ]; then
-              cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image ./AnyKernel3/
-            fi
-            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz" ]; then
-              cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz ./AnyKernel3/
-            fi
-            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo" ]; then
-              cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo ./AnyKernel3/
-            fi
-            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img" ]; then
-              cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img ./AnyKernel3/
-            fi
+          if [[ -e out/arch/arm64/boot/Image.gz-dtb ]]; then
+            cp -f out/arch/arm64/boot/Image.gz-dtb AnyKernel3/
+          elif [[ -e out/arch/arm64/boot/Image ]]; then
+            cp -f out/arch/arm64/boot/Image AnyKernel3/
+          elif [[ -e out/arch/arm64/boot/Image.gz ]]; then
+            cp -f out/arch/arm64/boot/Image.gz AnyKernel3/
+          elif [[ -e out/arch/arm64/boot/dtbo ]]; then
+            cp -f out/arch/arm64/boot/dtbo AnyKernel3/
+          elif [[ -e out/arch/arm64/boot/dtbo.img ]]; then
+            cp -f out/arch/arm64/boot/dtbo.img AnyKernel3/
+          elif [[ -e out/arch/arm64/boot/Image-dtb ]]; then
+            cp -f out/arch/arm64/boot/Image-dtb AnyKernel3/
           fi
-
+          
           cd AnyKernel3/
           zip -r9 "[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip" -- *
         
       - name: 🧧 Create GitHub Release
+        env:
+          ANYKERNEL3_FILE: AnyKernel3/[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}"
         uses: softprops/action-gh-release@v2
         with:
-          files: | 
-             [${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip
+          files: "${{ env.ANYKERNEL3_FILE }}.zip"
           name: kernel-release
           tag_name: Genom-${{ steps.generate-builddate.outputs.tagdate }}
           body: |
