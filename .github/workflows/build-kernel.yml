@@ -67,12 +67,6 @@ jobs:
             echo "CONFIG_LTO_CLANG=y" >>  ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
           fi
           
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          create-symlink: true 
-          max-size: "10G" 
-          
       - name: 🐎 Build kernel
         run: |
           cd ${{ github.workspace }}/kernel-source
