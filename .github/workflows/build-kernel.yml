@@ -25,7 +25,6 @@ jobs:
           echo "KERNEL_SOURCE_BRANCH=$(cat config.env | grep -w "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "KERNEL_CONFIG=$(cat config.env | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "BUILD_ARGS=$(cat config.env | grep -w "BUILD_ARGS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
-          echo "zdate=$(date "+%m%d")" >> GITHUB_ENV
           echo "PROCS=$(nproc --all)" >> GITHUB_ENV
           
       # Set swap space
@@ -72,13 +71,15 @@ jobs:
         run: |
           export TZ="Asia/Kuala Lumpur"
           echo "date=$(date)" 
+          echo "zdate=$(date +%m%d)" >> GITHUB_ENV
+          
           
       - name: 🐎 Build kernel
         run: |
           cd ${{ github.workspace }}/kernel-source
           echo "HASH_HEAD=$(git rev-parse --short HEAD)" >> GITHUB_ENV
           echo "COMMIT_HEAD=$(git log --oneline -1)" >> GITHUB_ENV
-          echo "build_start=$(date +"%s")" >> GITHUB_ENV
+          echo "time_start=$(date +%s)" >> GITHUB_ENV
           export PATH=${{ github.workspace }}/clang/bin:${PATH}
           echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
           echo "CLANG_VER=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')" >> $GITHUB_ENV
@@ -95,12 +96,21 @@ jobs:
           make clean
           make O=../out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
           make -j$(nproc --all) ${args}
+          
+      - name: ⏰ Set build end time
+        id: generate_build_end      
+        run: echo "end_time=$(date +%s)" 
+          
+      - name: ⏰ Calculate difference between time start and end build
+        id: time_difference
+        run: echo "DIFF=$((${{ steps.generate_build_end.outputs.end_time }} - ${{ env.time_start }}))" 
 
-      - name: ⏰ Pack Anykernel3
+      - name: ⌛ Time taken for build
+        id: time_taken
+        run:  echo "took=$((${{ steps.time_difference.outputs.DIFF }} / 60)) minute(s) and $((${{ steps.time_difference.outputs.DIFF }} % 60)) second(s)" 
+        
+      - name: 📦 Pack Anykernel3
         run: |
-          echo "build_end=$(date +"%s")" >> GITHUB_ENV
-          echo "DIFF=$((${{ env.build_end }} - ${{ env.build_start }} ))" >> GITHUB_ENV
-          echo "Build_took=$((${{ env.DIFF }} / 60)) minute(s) and $((${{ env.DIFF }} % 60)) second(s)" >> GITHUB_ENV
           git clone --depth=1 ${{ env.ANYKERNEL_SOURCE }} -b ${{ env.ANYKERNEL_SOURCE_BRANCH }} AnyKernel3 && rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/LICENSE AnyKernel3/README.md
            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb" ]; then
             cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb ./AnyKernel3/
@@ -125,10 +135,9 @@ jobs:
       - name: 🧧 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            AnyKernel3/[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip
+          files: [${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip
           name: kernel-release
-          tag_name: Genom-${{ env.date }}
+          tag_name: Genom.${{ steps.generate-builddate.outputs.date }}
           body: |
             Repo: ${{ env.KERNEL_SOURCE }}
             Branch: ${{ env.KERNEL_SOURCE_BRANCH }}
@@ -153,7 +162,7 @@ jobs:
             <b>ChangeLogs:</b>
             ${{ github.event.inputs.KERNEL_HOTFIX }}
 
-            <b>Build took: </b>${{ env.build_took }}
+            <b>Build took: </b>${{ steps.time_taken.outputs.took }}
             <b>Config: </b>${{ env.KERNEL_CONFIG }}
             <b>Kernel Ver: </b>${{ env.KERNEL_VER }}
             <b>Clang Ver: </b>${{ env.CLANG_VER }}
