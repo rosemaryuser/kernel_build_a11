@@ -135,7 +135,8 @@ jobs:
       - name: 🧧 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ['${{ env.zdate }}'][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip
+          files: | 
+             [${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip
           name: kernel-release
           tag_name: Genom.${{ steps.generate-builddate.outputs.date }}
           body: |
