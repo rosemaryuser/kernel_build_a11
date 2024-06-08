@@ -146,8 +146,7 @@ jobs:
           format: html
           disable_web_page_preview: true
           message: |
-            <b>Build info</b>
-            <b>Build Started Date: </b>${{ steps.generate-builddate.outputs.date }}
+            <b>Build Started: </b>${{ steps.generate-builddate.outputs.date }}
             <b>Top Commit: </b>${{ env.COMMIT_HEAD }} 
             <b>Core Count : </b>${{ env.PROCS }} cores
             <b>Enabled LTO Clang: </b>${{ github.events.inputs.ENABLE_LTO }}
