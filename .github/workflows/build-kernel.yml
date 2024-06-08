@@ -158,7 +158,7 @@ jobs:
             <b>Core Count : </b>${{ env.PROCS }} cores
             <b>Enabled LTO Clang: </b>${{ github.events.inputs.ENABLE_LTO }}
           
-            <a href="https://github.com/${{ github.repository }}/releases/tag/Genom-${{ env.date }}">Download</a>
+            <a href="https://github.com/${{ github.repository }}/releases/tag/Genom.${{ steps.generate-builddate.outputs.date }}">Download</a>
 
             <b>ChangeLogs:</b>
             ${{ github.event.inputs.KERNEL_HOTFIX }}
