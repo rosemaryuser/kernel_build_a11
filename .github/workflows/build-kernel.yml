@@ -26,6 +26,7 @@ jobs:
           echo "KERNEL_CONFIG=$(cat config.env | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "BUILD_ARGS=$(cat config.env | grep -w "BUILD_ARGS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
           echo "PROCS=$(nproc --all)" >> GITHUB_ENV
+          echo "zdate=$(date +%m%d)" >> GITHUB_ENV
           
       # Set swap space
       - name: 📐 Set swap to 12GB
@@ -70,9 +71,7 @@ jobs:
         id: generate-builddate
         run: |
           export TZ="Asia/Kuala Lumpur"
-          echo "date=$(date)" 
-          echo "zdate=$(date +%m%d)" >> GITHUB_ENV
-          
+          echo "date=$(date)" >> GITHUB_OUTPUT
           
       - name: 🐎 Build kernel
         run: |
@@ -99,7 +98,7 @@ jobs:
           
       - name: ⏰ Set build end time
         id: generate_build_end      
-        run: echo "end_time=$(date +%s)" 
+        run: echo "end_time=$(date +%s)" >> GITHUB_OUTPUT
           
       - name: ⏰ Calculate difference between time start and end build
         id: time_difference
