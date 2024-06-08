@@ -97,15 +97,11 @@ jobs:
           echo "date=$(date)" >> $GITHUB_OUTPUT
           echo "tagdate=$(date +%Y%m%d)" >> $GITHUB_OUTPUT  
           echo "end_time=$(date +%s)" >> $GITHUB_OUTPUT
-          
-      - name: ⏰ Calculate difference between time start and end build
-        id: time_difference
-        run: |
           echo "DIFF=$(( ${{ steps.generate-builddate.outputs.end_time }} - ${{ env.time_start }} ))" >> $GITHUB_OUTPUT
 
       - name: ⌛ Time taken for build
         id: time_taken
-        run:  echo "took=$((${{ steps.time_difference.outputs.DIFF }} / 60)) minute(s) and $((${{ steps.time_difference.outputs.DIFF }} % 60)) second(s)" 
+        run:  echo "took=$((${{ steps.generate-builddate.outputs.DIFF }} / 60)) minute(s) and $((${{ steps.generate-builddate.outputs.DIFF }} % 60)) second(s)" >> $GITHUB_OUTPUT
         
       - name: 📦 Pack Anykernel3
         run: |
