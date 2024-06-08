@@ -133,7 +133,6 @@ jobs:
             Repo: ${{ env.KERNEL_SOURCE }}
             Branch: ${{ env.KERNEL_SOURCE_BRANCH }}
             Config: ${{ env.KERNEL_CONFIG }}
-          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
           
       - name: Fast Telegram Action
         uses: s00d/fast-telegram-action@v9    
