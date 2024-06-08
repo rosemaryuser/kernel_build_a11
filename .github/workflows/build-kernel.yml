@@ -28,11 +28,16 @@ jobs:
           echo "PROCS=$(nproc --all)" >> GITHUB_ENV
           echo "zdate=$(date +%m%d)" >> GITHUB_ENV
           
-      # Set swap space
+      # Set swap space 
       - name: 📐 Set swap to 12GB
         uses: pierotofy/set-swap-space@master
         with:
           swap-size-gb: 12
+
+      # Set ccache
+      - name: Set ccache dir
+        env:
+          CCACHE_DIR: "${{ github.workspace }}/ccache"
 
       # Install prerequisites for Ubuntu
       - name: ⭐ Install prerequisites
@@ -72,6 +77,12 @@ jobs:
         run: |
           export TZ="Asia/Kuala Lumpur"
           echo "date=$(date)" >> GITHUB_OUTPUT
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          create-symlink: true 
+          max-size: "10G" 
           
       - name: 🐎 Build kernel
         run: |
@@ -102,7 +113,7 @@ jobs:
           
       - name: ⏰ Calculate difference between time start and end build
         id: time_difference
-        run: echo "DIFF=$((${{ steps.generate_build_end.outputs.end_time }} - ${{ env.time_start }}))" 
+        run: echo "DIFF=$(( ${{ steps.generate_build_end.outputs.end_time }} - ${{ env.time_start }} ))" >> GITHUB_OUTPUT
 
       - name: ⌛ Time taken for build
         id: time_taken
