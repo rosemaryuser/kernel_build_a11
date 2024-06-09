@@ -85,7 +85,6 @@ jobs:
                                   CROSS_COMPILE=aarch64-linux-gnu-
                                   CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
                                   "
-          cd ${{ github.workspace }}/kernel-source
           make clean
           make O=../out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
           make -j${{ env.PROCS }} ${args}
@@ -105,6 +104,7 @@ jobs:
         
       - name: 📦 Pack Anykernel3
         run: |
+          cd ${{ github.workspace }}
           git clone --depth=1 ${{ env.ANYKERNEL_SOURCE }} -b ${{ env.ANYKERNEL_SOURCE_BRANCH }} AnyKernel3 && rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/LICENSE AnyKernel3/README.md
           if [[ -e out/arch/arm64/boot/Image.gz-dtb ]]; then
             dd if=out/arch/arm64/boot/Image.gz-dtb of=AnyKernel3/Image.gz-dtb
@@ -120,11 +120,8 @@ jobs:
             dd if=out/arch/arm64/boot/Image-dtb of=AnyKernel3/Image-dtb
           fi
           
-          cd AnyKernel3/
-          zip -r9 "[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip" -- *
-          ls
-          cd 
-          ls
+          cd ${{ github.workspace }}/AnyKernel3
+          zip -r9 [${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip -- *
         
       - name: 🧧 Create GitHub Release
         uses: softprops/action-gh-release@v2
