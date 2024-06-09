@@ -121,7 +121,7 @@ jobs:
           fi
           
           cd ${{ github.workspace }}/AnyKernel3
-          zip -r9 [${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip -- *
+          zip -r9 [${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}.zip -- *
           
         
       - name: 🧧 Create GitHub Release
@@ -136,6 +136,7 @@ jobs:
             Repo: ${{ env.KERNEL_SOURCE }}
             Branch: ${{ env.KERNEL_SOURCE_BRANCH }}
             Config: ${{ env.KERNEL_CONFIG }}
+            Commit: ${{ env.HASH_HEAD }}
           
       - name: Fast Telegram Action
         uses: s00d/fast-telegram-action@v9    
