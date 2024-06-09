@@ -122,12 +122,13 @@ jobs:
           
           cd ${{ github.workspace }}/AnyKernel3
           zip -r9 [${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip -- *
+          
         
       - name: 🧧 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: | 
-            ${{ github.workspace }}/AnyKernel3/[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip
+            ${{ github.workspace }}/AnyKernel3/*.zip
           name: kernel-release
           tag_name: Genom-${{ steps.generate-builddate.outputs.tagdate }}
           body: |
