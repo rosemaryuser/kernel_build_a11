@@ -107,28 +107,27 @@ jobs:
         run: |
           git clone --depth=1 ${{ env.ANYKERNEL_SOURCE }} -b ${{ env.ANYKERNEL_SOURCE_BRANCH }} AnyKernel3 && rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/LICENSE AnyKernel3/README.md
           if [[ -e out/arch/arm64/boot/Image.gz-dtb ]]; then
-            cp -f out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
+            dd if=out/arch/arm64/boot/Image.gz-dtb of=AnyKernel3/Image.gz-dtb
           elif [[ -e out/arch/arm64/boot/Image ]]; then
-            cp -f out/arch/arm64/boot/Image AnyKernel3/Image
+            dd if=out/arch/arm64/boot/Image of=AnyKernel3/Image
           elif [[ -e out/arch/arm64/boot/Image.gz ]]; then
-            cp -f out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
+            dd if=out/arch/arm64/boot/Image.gz of=AnyKernel3/Image.gz
           elif [[ -e out/arch/arm64/boot/dtbo ]]; then
-            cp -f out/arch/arm64/boot/dtbo AnyKernel3/dtbo
+            dd if=out/arch/arm64/boot/dtbo of=AnyKernel3/dtbo
           elif [[ -e out/arch/arm64/boot/dtbo.img ]]; then
-            cp -f out/arch/arm64/boot/dtbo.img AnyKernel3/dtbo.img
+            dd if=out/arch/arm64/boot/dtbo.img of=AnyKernel3/dtbo.img
           elif [[ -e out/arch/arm64/boot/Image-dtb ]]; then
-            cp -f out/arch/arm64/boot/Image-dtb AnyKernel3/Image-dtb
+            dd if=out/arch/arm64/boot/Image-dtb of=AnyKernel3/Image-dtb
           fi
           
           cd AnyKernel3/
           zip -r9 "[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip" -- *
         
       - name: 🧧 Create GitHub Release
-        env:
-          ANYKERNEL3_FILE: AnyKernel3/[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}"
         uses: softprops/action-gh-release@v2
         with:
-          files: "${{ env.ANYKERNEL3_FILE }}.zip"
+          files: | 
+            ${{ github.workspace }}/AnyKernel3/[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip
           name: kernel-release
           tag_name: Genom-${{ steps.generate-builddate.outputs.tagdate }}
           body: |
