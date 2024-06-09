@@ -122,6 +122,9 @@ jobs:
           
           cd AnyKernel3/
           zip -r9 "[${{ env.zdate }}][rosemary]${{ env.KERNEL_VER }}-Genom-R${{ env.NAMELTO }}-${{ env.HASH_HEAD }}.zip" -- *
+          ls
+          cd 
+          ls
         
       - name: 🧧 Create GitHub Release
         uses: softprops/action-gh-release@v2
