@@ -148,6 +148,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           to: ${{ secrets.TELEGRAM_TO }}
           format: html
+          disable_web_page_preview: true
           message: |
             <b>Build Started: </b>${{ steps.generate-builddate.outputs.date }}
             <b>Top Commit: </b>${{ env.COMMIT_HEAD }} 
