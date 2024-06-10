@@ -148,7 +148,6 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           to: ${{ secrets.TELEGRAM_TO }}
           format: html
-          document: ${{ github.workspace }}/AnyKernel3/*.zip
           message: |
             <b>Build Started: </b>${{ steps.generate-builddate.outputs.date }}
             <b>Top Commit: </b>${{ env.COMMIT_HEAD }} 
@@ -165,4 +164,5 @@ jobs:
             <a href="https://github.com/${{ github.repository }}/releases/tag/Genom-${{ steps.generate-builddate.outputs.tagdate }}">Mirror link</a>
           
             <b>Maintainer: </b>${{ github.event.inputs.maintainer_name }}
+          document: ${{ github.workspace }}/AnyKernel3/*.zip 
 		    
