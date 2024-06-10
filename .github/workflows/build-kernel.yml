@@ -161,7 +161,7 @@ jobs:
             <b>ChangeLogs:</b>  
             ${{ github.event.inputs.KERNEL_HOTFIX }}
 
-            <a href="https://github.com/${{ github.repository }}/releases/tag/Genom-${{ steps.generate-builddate.outputs.tagdate }}">Mirror link</a>
+            <a href="https://github.com/${{ github.repository }}/releases/tag/Genom-${{ steps.generate-builddate.outputs.tagdate }}">Mirror-link</a>
           
             <b>Maintainer: </b>${{ github.event.inputs.maintainer_name }}
           document: ${{ github.workspace }}/AnyKernel3/*.zip 
