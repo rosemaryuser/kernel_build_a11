@@ -1,0 +1,136 @@
+name: Build Genom Kernel Test 
+
+on:
+  workflow_dispatch:
+    inputs:
+      KERNEL_HOTFIX:
+        description: 'ChangeLogs'
+        required: false
+        default: 'update'
+      ENABLE_LTO: 
+        description: 'Enable Clang LTO'
+        required: true
+        default: 'true'
+      maintainer_name:
+        description: 'your name'
+        required: true
+        default: 'nobody'
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        run: |
+          echo "ANYKERNEL_SOURCE=$(cat config.env | grep -w "ANYKERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+          echo "ANYKERNEL_SOURCE_BRANCH=$(cat config.env | grep -w "ANYKERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+          echo "KERNEL_SOURCE=$(cat config.env | grep -w "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+          echo "KERNEL_SOURCE_BRANCH=$(cat config.env | grep -w "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+          echo "KERNEL_CONFIG=$(cat config.env | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+          echo "BUILD_ARGS=$(cat config.env | grep -w "BUILD_ARGS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
+          echo "PROCS=$(nproc --all)" >> $GITHUB_ENV
+          echo "zdate=$(date +%m%d)" >> $GITHUB_ENV
+          
+      # Set swap space 
+      - name: 📐 Set swap to 12GB
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 12
+
+      # Install prerequisites for Ubuntu
+      - name: ⭐ Install prerequisites
+        run: |
+          sudo apt-get update && sudo apt-get upgrade
+          sudo apt-get install -y curl git ftp lftp wget libarchive-tools ccache python2 python2-dev python3
+          sudo apt-get install -y pngcrush schedtool dpkg-dev liblz4-tool make optipng maven ca-certificates
+          sudo apt-get install -y libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc
+          sudo apt-get install -y libxml2-utils libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools lzop flex 
+          sudo apt-get install -y build-essential bc libssl-dev libfl-dev nano libc6-dev openssl ssh zstd
+          sudo apt-get install -y pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl 
+          sudo apt-get install -y zip unzip tar gzip bzip2 rar unrar g++-multilib bison gperf zlib1g-dev automake
+          sudo apt-get install -y software-properties-common libffi-dev libncurses5-dev zlib1g libreadline-dev libsqlite3-dev 
+          sudo apt-get install -y pigz git-lfs gnupg imagemagick lib32readline-dev lib32z1-dev libelf-dev libncurses5 libsdl1.2-dev 
+          sudo apt-get install -y libxml2 rsync adb fastboot
+          
+      - name: 💫 Get toolchains
+        run: |
+          mkdir ${{ github.workspace }}/clang
+          cd clang
+          git clone https://github.com/rosemaryuser/clang-genom-kernel --depth=1 ${{ github.workspace }}/clang
+
+      - name: 🌟 Clone kernel source
+        run: |
+           mkdir ${{ github.workspace }}/kernel-source
+           git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} ${{ github.workspace }}/kernel-source
+           
+      - name: Enable thin lto or not
+        run: |
+          if [ ${{ inputs.ENABLE_LTO }} == true ]; then
+            echo "NAMELTO=-LTO" >> $GITHUB_ENV
+            echo "CONFIG_LTO_CLANG=y" >>  ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
+          fi
+          
+      - name: 🐎 Build kernel
+        run: |
+          cd ${{ github.workspace }}/kernel-source
+          echo "HASH_HEAD=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "COMMIT_HEAD=$(git log --oneline -1)" >> $GITHUB_ENV
+          export PATH=${{ github.workspace }}/clang/bin:${PATH}
+          echo "KERNEL_VER=$(make kernelversion)" >> $GITHUB_ENV
+          echo "CLANG_VER=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')" >> $GITHUB_ENV
+          export KBUILD_BUILD_USER="NYO"
+          export KBUILD_BUILD_HOST="github_workspace"
+          args="                  ARCH=arm64 \
+                                  CC=clang \
+                                  O=../out \
+                                  ${{ env.BUILD_ARGS }} \
+                                  CROSS_COMPILE=aarch64-linux-gnu-
+                                  CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+                                  "
+          make clean
+          make O=../out ARCH=arm64 ${{ env.KERNEL_CONFIG }}
+          make -j${{ env.PROCS }} ${args}
+
+      - name: ⏰ Set builddate
+        id: generate-builddate
+        run: |
+          export TZ="Asia/Kuala Lumpur"
+          echo "date=$(date)" >> $GITHUB_OUTPUT
+          echo "tagdate=$(date +%Y%m%d)" >> $GITHUB_OUTPUT  
+        
+      - name: 📦 Pack Anykernel3
+        run: |
+          cd ${{ github.workspace }}
+          git clone --depth=1 ${{ env.ANYKERNEL_SOURCE }} -b ${{ env.ANYKERNEL_SOURCE_BRANCH }} AnyKernel3 && rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/LICENSE AnyKernel3/README.md
+          if [[ -e out/arch/arm64/boot/Image.gz-dtb ]]; then
+            dd if=out/arch/arm64/boot/Image.gz-dtb of=AnyKernel3/Image.gz-dtb
+          elif [[ -e out/arch/arm64/boot/Image ]]; then
+            dd if=out/arch/arm64/boot/Image of=AnyKernel3/Image
+          elif [[ -e out/arch/arm64/boot/Image.gz ]]; then
+            dd if=out/arch/arm64/boot/Image.gz of=AnyKernel3/Image.gz
+          elif [[ -e out/arch/arm64/boot/dtbo ]]; then
+            dd if=out/arch/arm64/boot/dtbo of=AnyKernel3/dtbo
+          elif [[ -e out/arch/arm64/boot/dtbo.img ]]; then
+            dd if=out/arch/arm64/boot/dtbo.img of=AnyKernel3/dtbo.img
+          elif [[ -e out/arch/arm64/boot/Image-dtb ]]; then
+            dd if=out/arch/arm64/boot/Image-dtb of=AnyKernel3/Image-dtb
+          fi
+          
+          cd ${{ github.workspace }}/AnyKernel3
+          zip -r9 Genom-R${{ env.NAMELTO }}-${{ env.zdate }}-rosemary-${{ env.KERNEL_VER }}-unstable.zip -- *
+          
+      - name: 🧧 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: | 
+            ${{ github.workspace }}/AnyKernel3/*.zip
+          name: kernel-release
+          tag_name: Genom-${{ steps.generate-builddate.outputs.tagdate }}
+          body: |
+            Repo: ${{ env.KERNEL_SOURCE }}
+            Branch: ${{ env.KERNEL_SOURCE_BRANCH }}
+            Config: ${{ env.KERNEL_CONFIG }}
+            Commit: ${{ env.HASH_HEAD }}
+            Info: This is a unstable build not suitable for use 
