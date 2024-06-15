@@ -124,9 +124,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
           files: | 
             ${{ github.workspace }}/AnyKernel3/*.zip
-          name: kernel-release
+          name: kernel-pre-release
           tag_name: Genom-${{ steps.generate-builddate.outputs.tagdate }}
           body: |
             Repo: ${{ env.KERNEL_SOURCE }}
