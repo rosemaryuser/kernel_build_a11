@@ -150,6 +150,7 @@ jobs:
           format: html
           disable_web_page_preview: true
           message: |
+            <b>THIS IS ONLY FOR R VENDOR</b>
             <b>Build Started: </b>${{ steps.generate-builddate.outputs.date }}
             <b>Top Commit: </b>${{ env.COMMIT_HEAD }} 
             <b>Core Count : </b>${{ env.PROCS }} cores
@@ -158,7 +159,7 @@ jobs:
             <b>Config: </b>${{ env.KERNEL_CONFIG }}
             <b>Kernel Ver: </b>${{ env.KERNEL_VER }}
             <b>Clang Ver: </b>${{ env.CLANG_VER }}
-          
+         
             <b>ChangeLogs:</b>  
             ${{ github.event.inputs.KERNEL_HOTFIX }}
 
