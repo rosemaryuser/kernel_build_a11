@@ -135,4 +135,4 @@ jobs:
             Config: ${{ env.KERNEL_CONFIG }}
             Commit: ${{ env.HASH_HEAD }}
             Info: This is a unstable build not suitable for use 
-            Changelogs: {{ inputs.KERNEL_HOTFIX }} 
+            Changelogs: ${{ inputs.KERNEL_HOTFIX }} 
