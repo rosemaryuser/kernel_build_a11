@@ -11,6 +11,10 @@ on:
         description: 'Enable Clang LTO'
         required: true
         default: 'true'
+      ENABLE_KSU:
+        description: 'ksu patch'
+        required: true
+        default: true
       maintainer_name:
         description: 'your name'
         required: true
@@ -63,6 +67,16 @@ jobs:
         run: |
            mkdir ${{ github.workspace }}/kernel-source
            git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} ${{ github.workspace }}/kernel-source
+
+      - name: KernelSU Patch
+        run: |
+         if [ ${{ inputs.ENABLE_LTO }} == true ]; then
+           cd ${{ github.workspace }}/kernel-source
+           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
+           echo "CONFIG_KPROBES=y" >> ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
+           CONFIG_HAVE_KPROBES=y >> ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
+           CONFIG_KPROBE_EVENTS=y >> ${{ github.workspace }}/kernel-source/arch/arm64/configs/${{ env.KERNEL_CONFIG }}
+         fi
            
       - name: Enable thin lto or not
         run: |
